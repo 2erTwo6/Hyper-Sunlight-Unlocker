@@ -32,6 +32,15 @@ this.mMaxManualBoostBrightness = this.mContext.getResources().getFloat(0x1107002
 
 产物：`SunlightBoostLSP.apk`。
 
+### GitHub Actions 自动构建
+
+仓库已配置 CI（`.github/workflows/build.yml`），无需本地环境：
+
+- **触发时机**：push 到 `main`、PR、打 `v*` tag、或手动 `workflow_dispatch`
+- **产物**：每次构建的 APK 上传为 Actions artifact（`SunlightBoostLSP-apk`）
+- **发布**：打 `v1.2.3` 这类 tag 时自动创建 GitHub Release 并附带 APK，版本号取自 tag（`versionName=v1.2.3`，`versionCode=10203`）
+- **签名稳定**：CI 缓存 `signing.keystore`，所有构建共用同一把钥匙，用户可直接覆盖安装更新
+
 若要在其他 ROM 上重新推导 `ATTR` 表（manifest 属性 → framework 资源 id）：
 
 ```sh

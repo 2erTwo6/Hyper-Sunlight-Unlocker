@@ -44,8 +44,8 @@ def build_pool(strings):
 DOC = [
     ('manifest', [
         (None, 'package', 'str', PKG),
-        (NS_ANDROID, 'versionCode', 'int', 1),
-        (NS_ANDROID, 'versionName', 'str', '1.0'),
+        (NS_ANDROID, 'versionCode', 'int', int(os.environ.get('SUNLIGHT_VERSION_CODE') or 1)),
+        (NS_ANDROID, 'versionName', 'str', os.environ.get('SUNLIGHT_VERSION_NAME') or '1.0'),
     ]),
     ('uses-sdk', [
         (NS_ANDROID, 'minSdkVersion', 'int', 29),
