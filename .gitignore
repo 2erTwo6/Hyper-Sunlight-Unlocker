@@ -1,0 +1,7 @@
+r8.jar
+classes/
+dexout/
+apktest/
+signing.keystore
+*.log
+__pycache__/
