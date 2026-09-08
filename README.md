@@ -22,7 +22,7 @@ this.mMaxManualBoostBrightness = this.mContext.getResources().getFloat(0x1107002
 2. 目标值三级解析：`persist.sunlightboost.target`（GUI nit 模式写入的**绝对目标 float**）→ 旧倍率链 → 默认 106.8%，clamp 到 ≤1.0（面板满量程）
 3. **只改这一个字段**，其余一概不碰
 
-## GUI（Hyper-Sunlight-Unlocker）
+## GUI（SunlightBoost）
 
 模块 APK 可从桌面直接打开：
 
@@ -72,7 +72,7 @@ GUI 与 hook（system_server）之间按优先级：
 
 需要 JDK 17、python3、curl。`./build.sh`（自动下载 r8/D8 工具链 + 官方 android.jar 编译期 classpath，编译、打包、生成 `signing.keystore` 并签名）。
 
-产物：`Hyper-Sunlight-Unlocker.apk`。
+产物：`SunlightBoostLSP.apk`。
 
 ### GitHub Actions 自动构建
 
@@ -81,11 +81,11 @@ GUI 与 hook（system_server）之间按优先级：
 ## 安装
 
 ```sh
-adb push Hyper-Sunlight-Unlocker.apk /data/local/tmp/
-adb shell pm install /data/local/tmp/Hyper-Sunlight-Unlocker.apk
+adb push SunlightBoostLSP.apk /data/local/tmp/
+adb shell pm install /data/local/tmp/SunlightBoostLSP.apk
 ```
 
-然后：LSPosed 管理器 → 模块 → **Hyper-Sunlight-Unlocker** → 启用，作用域勾选 **Android 系统**，重启（或用模块内软重启按钮）。首次在 GUI 里保存时会弹 root 授权，允许一次即可。
+然后：LSPosed 管理器 → 模块 → **SunlightBoost** → 启用，作用域勾选 **Android 系统**，重启（或用模块内软重启按钮）。首次在 GUI 里保存时会弹 root 授权，允许一次即可。
 
 ## 验证
 
@@ -111,7 +111,6 @@ LSPosed 日志中 `SBOLSP:` 行显示出厂值 / 目标来源 / 最终值。
 
 ## 更新日志
 
-- **改名**：模块显示名与 APK 产物更名为 Hyper-Sunlight-Unlocker（包名 `com.sunlightboost.lsp` 与配置通道不变，旧版本可直接覆盖安装）
 - **1.3（2026-09-08）**：滑块改 nit 直选（厂商标定表解析，下限=原厂上限，无表回落倍率）；hook 支持绝对目标；`xposedsharedprefs` 声明 + `<queries>`；配置改 persist 属性通道；读数面板加出厂上限来源标注；prefs 全局可读兜底
 - **1.1**：配置改 persist 属性通道（SELinux 拦截 prefs 直读的解法）
 - **1.0**：首版，dash 专用硬编码（0.593761 → 0.634171）

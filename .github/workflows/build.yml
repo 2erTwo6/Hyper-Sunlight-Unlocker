@@ -52,13 +52,13 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Hyper-Sunlight-Unlocker-apk
-          path: Hyper-Sunlight-Unlocker.apk
+          name: SunlightBoostLSP-apk
+          path: SunlightBoostLSP.apk
           if-no-files-found: error
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: Hyper-Sunlight-Unlocker.apk
+          files: SunlightBoostLSP.apk
           generate_release_notes: true

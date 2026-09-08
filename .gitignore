@@ -7,5 +7,5 @@ apktest/
 signing.keystore
 *.log
 __pycache__/
-Hyper-Sunlight-Unlocker.apk
+SunlightBoostLSP.apk
 known_hosts*
