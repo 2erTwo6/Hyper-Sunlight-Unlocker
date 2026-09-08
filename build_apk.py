@@ -17,7 +17,7 @@ ATTR = {
 }
 NS_ANDROID = 'http://schemas.android.com/apk/res/android'
 PKG = 'com.sunlightboost.lsp'
-DESC = 'Unlock sunlight-mode manual brightness cap (HyperOS3, adjustable multiplier)'
+DESC = 'Unlock sunlight-mode manual brightness cap to 1000 nit'
 
 def build_pool(strings):
     """UTF-16 LE unsorted pool. headerSize=28; offsets array at +28; strings at stringsStart."""
@@ -61,24 +61,7 @@ DOC = [
     ('/meta-data', []),
     ('meta-data', [(NS_ANDROID, 'name', 'str', 'xposedscope'), (NS_ANDROID, 'value', 'str', 'android')]),
     ('/meta-data', []),
-    ('meta-data', [(NS_ANDROID, 'name', 'str', 'xposedsharedprefs'), (NS_ANDROID, 'value', 'str', 'true')]),
-    ('/meta-data', []),
-    ('activity', [
-        (NS_ANDROID, 'name', 'str', 'sbo.MainActivity'),
-        (NS_ANDROID, 'label', 'str', 'SunlightBoost'),
-    ]),
-    ('intent-filter', []),
-    ('action', [(NS_ANDROID, 'name', 'str', 'android.intent.action.MAIN')]),
-    ('/action', []),
-    ('category', [(NS_ANDROID, 'name', 'str', 'android.intent.category.LAUNCHER')]),
-    ('/category', []),
-    ('/intent-filter', []),
-    ('/activity', []),
     ('/application', []),
-    ('queries', []),
-    ('package', [(NS_ANDROID, 'name', 'str', 'android.miui')]),
-    ('/package', []),
-    ('/queries', []),
     ('/manifest', []),
 ]
 

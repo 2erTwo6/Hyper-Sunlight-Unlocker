@@ -7,6 +7,4 @@ public final class XposedHelpers {
     public static int getIntField(Object o, String f) throws Throwable { return 0; }
     public static Object getObjectField(Object o, String f) throws Throwable { return null; }
     public static void setFloatField(Object o, String f, float v) throws Throwable {}
-    public static Object callMethod(Object o, String m, Object... a) throws Throwable { return null; }
-    public static Object callStaticMethod(Class<?> c, String m, Object... a) throws Throwable { return null; }
 }

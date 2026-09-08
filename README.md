@@ -1,10 +1,8 @@
 # Hyper-Sunlight-Unlocker
 
-HyperOS **3（OS3）专用**：阳光模式手动亮度上限解锁。滑块直接以 **nit** 选择上限，刻度来自本机厂商标定表，全部参数运行时读取、零硬编码，多机型开箱即用。
+HyperOS 阳光模式增强：把**手动亮度上限**从 800 nit 提升到 1000 nit（DBV 9728 → 10390）。
 
-- 适配范围：`ro.mi.os.version.name` 以 `OS3` 开头的 MIUI/HyperOS 系统
-- 非 OS3 系统模块**自动不 Hook**（只打日志），未启用该功能的机型自动 no-op
-- 参照机型 Redmi Turbo 5 Max (`dash`)：默认 100%（原厂 800 nit），出厂标定峰值 3500 nit
+适配 Redmi Turbo 5 Max (`dash`) / HyperOS 3.0.305 (Android 16)。其他机型按「原理」一节自行核对后改值。
 
 ## 原理
 
@@ -16,67 +14,48 @@ this.mMaxManualBoostBrightness = this.mContext.getResources().getFloat(0x1107002
 // 0x1107002f = android.miui:dimen/config_max_manual_brt_boost
 ```
 
-该字段是**面板满量程 DBV 的比例值**（DBV = float × 16383，实测锚点精确吻合），并与厂商标定的亮度表逐点对应。本模块是 LSPosed 模块（作用域 = Android 系统），hook `DisplayPowerControllerImpl.init()` 返回点：
+- 原厂值 `0.593761` → 滑条最大 DBV 9728 ≈ 800 nit
+- 目标值 `0.634171` → DBV 10390 ≈ 1000 nit（由面板 nit-DBV 换算表得出）
 
-1. 运行时从 `android.miui:dimen/config_max_manual_brt_boost` 读出**出厂值**（查不到则退回字段值）
-2. 目标值三级解析：`persist.sunlightboost.target`（GUI nit 模式写入的**绝对目标 float**）→ 旧倍率链 → 默认 106.8%，clamp 到 ≤1.0（面板满量程）
-3. **只改这一个字段**，其余一概不碰
+本模块是 LSPosed 模块（作用域 = Android 系统），hook `DisplayPowerControllerImpl.init()` 的返回点，把该字段改写为 `0.634171`。**只改这一个字段**，其余一概不碰。
 
-## GUI（SunlightBoost）
+设计约束：
 
-模块 APK 可从桌面直接打开：
-
-- **滑块（nit 模式）**：GUI 从 `dumpsys display` 解析本机厂商标定表（`mBacklight`/`mNits`，分段线性），滑块刻度直接以 nit 显示。**下限 = 阳光模式原厂上限**（出厂值经标定表换算，各机型各自对齐），**上限 = 面板峰值**。读取不到标定表时自动回落为倍率模式（100%–200%）
-- **读数面板**：实时 DBV（`brightness_clone`，与滑条同步的镜像节点）+ 逻辑上限 + 皮肤温度 + 当前生效 float/DBV/nit + 出厂上限（含读取来源标注）
-- **软重启按钮**：重启 system_server（短暂黑屏，等效重启但更快），新上限在此时生效
-
-注意：DBV 与 nit 不是线性关系（低亮区压缩、峰值区饱和），倍率 ×2 ≠ 亮度 ×2——这正是滑块要按标定表换算的原因。
-
-## 配置传递通道
-
-GUI 与 hook（system_server）之间按优先级：
-
-1. `persist.sunlightboost.target`：绝对目标 float × 1e6（nit 模式，GUI 保存时经 su 写入；system_server 可读、重启不丢）
-2. `persist.sunlightboost.pct` / prefs `multiplier_pct`：相对出厂的倍率 ×0.1%（旧倍率模式兜底）
-3. 都没有 → 默认 106.8%
-
-为什么不直接读 GUI 的 prefs：模块数据目录被 SELinux per-app 分类隔离，system_server 读不到（实测 EACCES）；XSharedPreferences 各版本行为不一。persist 属性是 root 玩家场景下最稳的通道。
-
-## 门卫与安全设计
-
-- **OS 门卫**：非 OS3 一律不 Hook（连类查找都不做）
-- **无效出厂值守卫**：出厂值 ≤ 0（OS4 的 -1.0 哨兵）或 > 1.0 → 不修改
-- **不抛异常**：hook 回调全 try/catch，异常只进 LSPosed 日志
-- **出厂值优先读资源**：init 重入不会把已改值当出厂值叠加
-- 失败分层日志：OS 不符 / 类找不到 / 资源查不到 / 出厂值无效 / 配置来源，各打一条
+- **值守卫**：仅当当前值恰为 `0.593761` 时才改写；其他值只记日志不动手——ROM 更新改了默认值时自动降级为 no-op
+- **不抛异常**：hook 回调全 try/catch，异常只进 LSPosed 日志，永不进入 system_server
+- **为什么不用 RRO/overlay**：静态 RRO 的资源裁决优先级不可控（扫描顺序决定胜负），且为了取胜需要改包名/文件名触发包管理 churn，实测导致 MIUI 桌面开机崩溃循环（UI 完全不可用）。LSPosed 运行时 hook 零挂载、零包注册、零资源覆盖，出问题关开关重启即恢复
 - 自动亮度逻辑不受影响（该字段只在阳光模式 + 非自动亮度的手动路径参与）
 
-## dash 标定对照表（dumpsys 厂商数据 + 实测锚点，完整分析见 samples.md）
+## 亮度映射表
 
-| 滑块 | float | DBV | nit |
-|---|---|---|---|
-| 原厂（100%）| 0.593761 | 9727 | 800 |
-| 默认（106.8%）| 0.634157 | 10389 | 1000 |
-| 141% | 0.836223 | 13697 | 2000 |
-| 200% | 1.0 | 16383 | 3500（峰值规格）|
+| 亮度 | 字段值（`Hook.java` 的 `NEW` 常量） | DBV |
+|------|--------------------------------------|-----|
+| 800 nit（原厂） | `0.593761f` | 9728 |
+| 1000 nit | `0.634171f` | 10390 |
+| 1500 nit | `0.735197f` | 12045 |
 
-## 样本数据（酷安收集，见 samples.md）
-
-| 机型 | 代号 | 系统 | 机制 | 出厂值 | 结论 |
-|------|------|------|------|--------|------|
-| Redmi Turbo 5 Max | dash | OS3.0.305 | ✓ | 0.593761 | 参照机，全链路实测通过 |
-| Redmi K80 Ultra | dali | OS3.0.0.305 | ✓ | 0.66682947 | 运行时读取即适配 |
-| Xiaomi 15 | dada | OS4.0.0.6 | 字段在但功能禁用 | -1.0（哨兵） | 自动判定不适用 |
+改亮度上限 = 改 `src/sbo/Hook.java` 第 11 行 `NEW` 的值后重新构建。1500 nit 为线性外推估算，实际亮度受面板物理上限约束，建议小步上调实测。
 
 ## 构建
 
-需要 JDK 17、python3、curl。`./build.sh`（自动下载 r8/D8 工具链 + 官方 android.jar 编译期 classpath，编译、打包、生成 `signing.keystore` 并签名）。
+需要 JDK 17、python3、curl。`./build.sh`（自动下载 r8/D8 工具链、编译、打包、生成 `signing.keystore` 并签名）。
 
 产物：`SunlightBoostLSP.apk`。
 
 ### GitHub Actions 自动构建
 
-`.github/workflows/build.yml`：push 到 `main`、PR、`v*` tag、手动触发均构建；打 tag 时自动发 Release。**注意：本地构建的 `signing.keystore` 与 CI 缓存的钥匙不同，跨来源覆盖安装需先卸载。**
+仓库已配置 CI（`.github/workflows/build.yml`），无需本地环境：
+
+- **触发时机**：push 到 `main`、PR、打 `v*` tag、或手动 `workflow_dispatch`
+- **产物**：每次构建的 APK 上传为 Actions artifact（`SunlightBoostLSP-apk`）
+- **发布**：打 `v1.2.3` 这类 tag 时自动创建 GitHub Release 并附带 APK，版本号取自 tag（`versionName=v1.2.3`，`versionCode=10203`）
+- **签名稳定**：CI 缓存 `signing.keystore`，所有构建共用同一把钥匙，用户可直接覆盖安装更新
+
+若要在其他 ROM 上重新推导 `ATTR` 表（manifest 属性 → framework 资源 id）：
+
+```sh
+python3 extract_attr_ids.py <任意系统apk路径>   # 从其 AndroidManifest.xml 提取
+```
 
 ## 安装
 
@@ -85,32 +64,18 @@ adb push SunlightBoostLSP.apk /data/local/tmp/
 adb shell pm install /data/local/tmp/SunlightBoostLSP.apk
 ```
 
-然后：LSPosed 管理器 → 模块 → **SunlightBoost** → 启用，作用域勾选 **Android 系统**，重启（或用模块内软重启按钮）。首次在 GUI 里保存时会弹 root 授权，允许一次即可。
+然后：LSPosed 管理器 → 模块 → **SunlightBoost** → 启用，作用域勾选 **Android 系统**，重启。
 
 ## 验证
 
 ```sh
 adb shell dumpsys display | grep mMaxManualBoostBrightness
-# 应为 GUI 选定的目标值（≤1.0）
+# mMaxManualBoostBrightness=0.634171
 ```
 
-LSPosed 日志中 `SBOLSP:` 行显示出厂值 / 目标来源 / 最终值。
+手动亮度（自动亮度关闭时）滑条拉到底 = DBV 10390 ≈ 1000 nit。
 
 ## 回滚 / 卸载
 
-- 滑块拖回下限（原厂上限）保存 + 软重启 → 等效关闭
-- LSPosed 关闭模块开关 + 重启 → 恢复出厂值
+- 临时：LSPosed 关闭模块开关 + 重启 → 恢复原厂 800 nit
 - 彻底：`pm uninstall com.sunlightboost.lsp`
-
-## 已知边界
-
-- OS4（如 Xiaomi 15 dada）上 `SUPPORT_MANUAL_BRIGHTNESS_BOOST=false`、出厂值为 -1.0 哨兵：模块自动不修改。强行支持需实验分支强写能力开关（未实现）
-- 非 MIUI/HyperOS 系统：`DisplayPowerControllerImpl` 不存在，hook 失败仅留日志
-- MIUI 14（`V14`）未验证，OS 门卫会拒绝 Hook
-- 峰值 nit 为厂商标定（小窗口规格），全屏持续输出受 APL 与热限流约束
-
-## 更新日志
-
-- **1.3（2026-09-08）**：滑块改 nit 直选（厂商标定表解析，下限=原厂上限，无表回落倍率）；hook 支持绝对目标；`xposedsharedprefs` 声明 + `<queries>`；配置改 persist 属性通道；读数面板加出厂上限来源标注；prefs 全局可读兜底
-- **1.1**：配置改 persist 属性通道（SELinux 拦截 prefs 直读的解法）
-- **1.0**：首版，dash 专用硬编码（0.593761 → 0.634171）
