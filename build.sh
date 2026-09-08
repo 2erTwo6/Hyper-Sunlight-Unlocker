@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build SunlightBoostLSP.apk. Needs: JDK 17 (javac/keytool), python3.
+# Build Hyper-Sunlight-Unlocker.apk. Needs: JDK 17 (javac/keytool), python3.
 # r8.jar (D8 dexer, pure java, any arch) is fetched automatically.
 set -e
 cd "$(dirname "$0")"
