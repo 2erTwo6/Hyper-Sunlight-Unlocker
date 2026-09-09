@@ -52,7 +52,7 @@ DOC = [
         (NS_ANDROID, 'targetSdkVersion', 'int', 29),
     ]),
     ('/uses-sdk', []),
-    ('application', [(NS_ANDROID, 'label', 'str', 'SunlightBoost')]),
+    ('application', [(NS_ANDROID, 'label', 'str', 'Hyper-Sunlight-Unlocker')]),
     ('meta-data', [(NS_ANDROID, 'name', 'str', 'xposedmodule'), (NS_ANDROID, 'value', 'str', 'true')]),
     ('/meta-data', []),
     ('meta-data', [(NS_ANDROID, 'name', 'str', 'xposeddescription'), (NS_ANDROID, 'value', 'str', DESC)]),
@@ -65,7 +65,7 @@ DOC = [
     ('/meta-data', []),
     ('activity', [
         (NS_ANDROID, 'name', 'str', 'sbo.MainActivity'),
-        (NS_ANDROID, 'label', 'str', 'SunlightBoost'),
+        (NS_ANDROID, 'label', 'str', 'Hyper-Sunlight-Unlocker'),
     ]),
     ('intent-filter', []),
     ('action', [(NS_ANDROID, 'name', 'str', 'android.intent.action.MAIN')]),
@@ -132,12 +132,12 @@ def ensure_keystore():
         subprocess.run(['keytool', '-genkeypair', '-v', '-keystore', ks, '-alias', 'sbo',
                         '-keyalg', 'RSA', '-keysize', '2048', '-validity', '10000',
                         '-storepass', 'sunlightboost', '-keypass', 'sunlightboost',
-                        '-dname', 'CN=SunlightBoost'], check=True, capture_output=True)
+                        '-dname', 'CN=Hyper-Sunlight-Unlocker'], check=True, capture_output=True)
     return ks
 
 def main():
     manifest = build_axml()
-    out = 'SunlightBoostLSP.apk'
+    out = 'Hyper-Sunlight-Unlocker.apk'
     with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
         z.writestr('AndroidManifest.xml', manifest)
         z.writestr('classes.dex', open('dexout/classes.dex', 'rb').read())

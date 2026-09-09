@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * SunlightBoost 模块设置界面（无资源文件，全部代码构建）：
+ * Hyper-Sunlight-Unlocker 模块设置界面（无资源文件，全部代码构建）：
  *  - 滑块（nit 模式）：直接以 nit 选择亮度上限，刻度来自本机厂商标定表（dumpsys mBacklight/mNits，
  *    分段线性插值，非估算）；解析不到标定表的机型自动回落为倍率模式
  *  - 读数面板：实时 DBV（brightness_clone）+ 逻辑上限 + 皮肤温度 + 当前生效 float/nit
@@ -58,7 +58,7 @@ public class MainActivity extends Activity {
         root.setPadding(pad, pad, pad, pad);
 
         TextView title = new TextView(this);
-        title.setText("SunlightBoost · HyperOS3 阳光上限");
+        title.setText("Hyper-Sunlight-Unlocker · HyperOS3 阳光上限");
         title.setTextSize(20);
         title.setTypeface(Typeface.DEFAULT_BOLD);
         root.addView(title);
