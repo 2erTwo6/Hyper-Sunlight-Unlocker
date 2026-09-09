@@ -1,7 +1,11 @@
 r8.jar
+android.jar
+platform.zip
 classes/
 dexout/
 apktest/
 signing.keystore
 *.log
 __pycache__/
+SunlightBoostLSP.apk
+known_hosts*
